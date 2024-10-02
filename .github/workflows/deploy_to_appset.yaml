@@ -17,6 +17,7 @@ jobs:
       app_name: ${{ steps.app_names.outputs.app_name }}
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-bash@v3
       - name: deployments_name
         id: list_creation
         run: |
