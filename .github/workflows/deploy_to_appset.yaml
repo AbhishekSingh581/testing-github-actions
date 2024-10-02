@@ -7,7 +7,7 @@ on:
         description : 'Build Version'
         required: true
       deployments:
-        description: 'Enter the deployment names with comma(,) separated'
+        description: 'Deployment names separated by (,)'
 
 
 jobs:
@@ -16,8 +16,11 @@ jobs:
     outputs:
       app_name: ${{ steps.app_names.outputs.app_name }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: Read deployment list
+        id: all_deployment_list
+        uses: AbhishekSingh581/testing-github-actions@main
+        with:
+          path: .github/workflows/deployment-list.txt
 
       - name: deployments_name
         id: list_creation
@@ -25,7 +28,7 @@ jobs:
           declare -a app_names=()
           if [ -z "${{ github.event.inputs.deployments }}" ]; then
             echo "Deployments input is empty. Reading from file."
-            app_names= cat deployment-list.txt
+            app_names = "${{ steps.all_deployment_list.outputs.content }}"
           else
             IFS=',' read -ra app_names <<< "${{github.event.inputs.deployments}}"
           fi
