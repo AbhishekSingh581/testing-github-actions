@@ -8,6 +8,8 @@ on:
         required: true
       deployments:
         description: 'Deployment names separated by (,)'
+      all_deployments:
+        type: boolean
 
 
 jobs:
@@ -21,20 +23,27 @@ jobs:
         id: list_creation
         run: |
           declare -a app_names=()
-          if [ -z "${{ github.event.inputs.deployments }}" ]; then
-            echo "Deployments input is empty. Reading from file."
-            file_path=".github/workflows/another/deployment-list.txt"
-            file_content=$(cat "$file_path")
+          if ${{ github.event.inputs.all_deployments }} == true; then
+            file_content=$(cat ".github/workflows/another/deployment-list.txt")
             for line in $file_content; do
               app_names+=("$line")
             done
-          else
-            IFS=',' read -ra app_names <<< "${{github.event.inputs.deployments}}"
           fi
-          for ((i=0; i<${#app_names[@]}; i++)); do
-            app_names[i]="${app_names[i]#"${app_names[i]%%[![:space:]]*}"}"
-            app_names[i]="${app_names[i]%"${app_names[i]##*[![:space:]]}"}"
+          
+          if [[ ! -z "${{ github.event.inputs.deployments }}" ]]; then
+            IFS=',' read -ra additional_deployments <<< "${{ github.event.inputs.deployments }}"
+            for i in "${!additional_deployments[@]}"; do
+              additional_deployments[i]="${additional_deployments[i]#"${additional_deployments[i]%%[![:space:]]*}"}"
+              additional_deployments[i]="${additional_deployments[i]%"${additional_deployments[i]##*[![:space:]]}"}"
+            done
+            app_names+=( "${additional_deployments[@]}" )
+          fi
+          
+          declare -A unique_app_names
+          for app in "${app_names[@]}"; do
+            unique_app_names[$app]=1
           done
+          app_names=("${!unique_app_names[@]}")
           
           echo "deployments_names=${app_names[*]}" >> $GITHUB_OUTPUT
 
