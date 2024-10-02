@@ -10,6 +10,8 @@ on:
         description: 'Deployment names separated by (,)'
       all_deployments:
         type: boolean
+      some_deployments:
+        type: boolean
 
 
 jobs:
@@ -24,6 +26,13 @@ jobs:
         run: |
           declare -a app_names=()
           if ${{ github.event.inputs.all_deployments }} == true; then
+            file_content=$(cat ".github/workflows/another/deployment-list.txt")
+            for line in $file_content; do
+              app_names+=("$line")
+            done
+          fi
+          
+          if ${{ github.event.inputs.some_deployments }} == true; then
             file_content=$(cat ".github/workflows/another/deployment-list.txt")
             for line in $file_content; do
               app_names+=("$line")
