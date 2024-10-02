@@ -25,6 +25,7 @@ jobs:
             echo "Deployments input is empty. Reading from file."
             file_path=".github/workflows/deployment-list.txt"
             file_content = $(cat "$file_path")
+            echo "file content: ${file_content}"
             for line in $file_content; do
               app_names+=("$line")
             done
