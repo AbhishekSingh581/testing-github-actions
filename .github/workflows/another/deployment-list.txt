@@ -1,3 +1,5 @@
 v1-stocks-order-tr-request-adapter
 v2-stocks-order-tr-request-adapter
 v3-stocks-order-tr-request-adapter
+stocks-deployment
+fno-order-service
