@@ -1,0 +1,49 @@
+name: Deploy to prod appset
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_version:
+        description : 'Build Version'
+        required: true
+      deployments:
+        description: 'Enter the deployment names with comma(,) separated'
+
+
+jobs:
+  getting_app_name:
+    runs-on: ubuntu-latest
+    outputs:
+      app_name: ${{ steps.app_names.outputs.app_name }}
+    steps:
+      - name: deployments_name
+        id: list_creation
+        run: |
+          declare -a app_names=()
+          if [ -z "${{ github.event.inputs.deployments }}" ]; then
+            echo "Deployments input is empty. Reading from file."
+            app_names=$(cat .github/workflows/deployment-list.txt)
+          else
+            IFS=',' read -ra app_names <<< "${{github.event.inputs.deployments}}"
+          fi
+          for ((i=0; i<${#app_names[@]}; i++)); do
+            app_names[i]="${app_names[i]#"${app_names[i]%%[![:space:]]*}"}"
+            app_names[i]="${app_names[i]%"${app_names[i]##*[![:space:]]}"}"
+          done
+          
+          echo "deployments_names=${app_names[*]}" >> $GITHUB_OUTPUT
+
+      - name: app-name creation
+        id: app_names
+        run: |
+          app_name=""
+          app_list=(${{steps.list_creation.outputs.deployments_names}})
+          for app in "${app_list[@]}"; do
+            if [[ ${app_name} == "" ]]; then
+              app_name="${app}"
+            else
+              app_name="${app_name},${app}"
+            fi
+          done
+          echo "output: ${app_name}"
+          echo "app_name=${app_name}" >> $GITHUB_OUTPUT
