@@ -16,13 +16,16 @@ jobs:
     outputs:
       app_name: ${{ steps.app_names.outputs.app_name }}
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: deployments_name
         id: list_creation
         run: |
           declare -a app_names=()
           if [ -z "${{ github.event.inputs.deployments }}" ]; then
             echo "Deployments input is empty. Reading from file."
-            app_names=$(cat "$GITHUB_WORKSPACE.github/workflows/deployment-list.txt")
+            app_names= cat deployment-list.txt
           else
             IFS=',' read -ra app_names <<< "${{github.event.inputs.deployments}}"
           fi
